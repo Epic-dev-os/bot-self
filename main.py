@@ -5,37 +5,55 @@ import os
 import sys
 import time
 from pathlib import Path
-from colorama import Fore, Style, init
+
 import discord
+from colorama import Fore, Style, init
 from discord.ext import commands
-from utils.storage import load_config, AccountStore
+
+from manager import TenantManager
+from utils.storage import AccountStore, load_config
 from utils.theme import UI
-from utils.licensing import verify_key, LicenseError
 
 init(autoreset=True)
 
+HOST_ONLY_COGS = {"panel", "host_control"}
+
 
 class NovaBot(commands.Bot):
-    def __init__(self, account_num: int, prefix: str, owner_id: str | None, license_key: str):
+    def __init__(self, prefix: str, owner_id: int | str | None = None, *,
+                 is_host: bool = False, manager: TenantManager | None = None):
         super().__init__(command_prefix=prefix, self_bot=True, help_command=None)
-        self.account_num = account_num
-        self.license_key = license_key
-        self.license_claims = verify_key(license_key)
+        self.is_host = is_host
+        self.manager = manager
         self.owner_id_override = int(owner_id) if owner_id and str(owner_id).isdigit() else None
-        self.store = AccountStore(account_num)
+        self.store = AccountStore(1 if is_host else self.owner_id_override)
         self.start_time = time.time()
         self.snipes: dict[int, list[dict]] = {}
         self.esnipes: dict[int, list[dict]] = {}
         self.ghost_pings: dict[int, list[dict]] = {}
         self._watcher_started = False
+        self._runner_task: asyncio.Task | None = None
+
+    @property
+    def label(self) -> str:
+        return "HOST" if self.is_host else f"USER:{self.owner_id_override}"
 
     def is_owner_user(self, user_id: int) -> bool:
         if self.user and user_id == self.user.id:
             return True
         return bool(self.owner_id_override and user_id == self.owner_id_override)
 
+    def set_prefix(self, prefix: str) -> None:
+        self.command_prefix = prefix
+        if not self.is_host and self.owner_id_override:
+            self.manager.update_prefix(self.owner_id_override, prefix)
+
     def autodel_time(self) -> int | None:
-        val = int(load_config().get("autodel", 0) or 0)
+        if self.is_host:
+            val = int(load_config().get("autodel", 0) or 0)
+        else:
+            rec = self.manager.store.get(self.owner_id_override) or {}
+            val = int(rec.get("autodel", 0) or 0)
         return val if val > 0 else None
 
     async def reply(self, ctx: commands.Context, content: str = "", **kwargs):
@@ -48,44 +66,37 @@ class NovaBot(commands.Bot):
         for file in sorted(cogs_dir.glob("*.py")):
             if file.name.startswith("_"):
                 continue
+            if not self.is_host and file.stem in HOST_ONLY_COGS:
+                continue
             ext = f"cogs.{file.stem}"
             try:
                 await self.load_extension(ext)
-                print(f"{Fore.CYAN}[Account {self.account_num}] Loaded {ext}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}[{self.label}] Loaded {ext}{Style.RESET_ALL}")
             except Exception as exc:
-                print(f"{Fore.RED}[Account {self.account_num}] Failed {ext}: {exc}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[{self.label}] Failed {ext}: {exc}{Style.RESET_ALL}")
+
+        if self.is_host:
+            from cogs.panel import build_panel_view
+            self.add_view(build_panel_view(self))
 
     async def on_ready(self):
-        try:
-            self.license_claims = verify_key(self.license_key, expected_user_id=self.user.id)
-        except LicenseError as exc:
-            print(f"{Fore.RED}[Account {self.account_num}] LICENSE ERROR: {exc}{Style.RESET_ALL}")
-            await self.close()
-            return
-
-        if not self._watcher_started:
-            self._watcher_started = True
-            asyncio.create_task(self._license_watcher())
-
         print(
-            f"{Fore.GREEN}[Account {self.account_num}] Online as {self.user} "
-            f"(ID: {self.user.id}) | Plan: {self.license_claims['plan'].upper()} "
-            f"| Guilds: {len(self.guilds)} | Prefix: {self.command_prefix}{Style.RESET_ALL}"
+            f"{Fore.GREEN}[{self.label}] Online as {self.user} "
+            f"(ID: {self.user.id}) | Guilds: {len(self.guilds)} | Prefix: {self.command_prefix}{Style.RESET_ALL}"
         )
-
-    async def _license_watcher(self):
-        while not self.is_closed():
-            await asyncio.sleep(600)
-            try:
-                verify_key(self.license_key, expected_user_id=self.user.id)
-            except LicenseError as exc:
-                print(f"{Fore.RED}[Account {self.account_num}] LICENSE EXPIRED: {exc}{Style.RESET_ALL}")
-                await self.close()
-                return
+        if self.is_host and not self._watcher_started:
+            self._watcher_started = True
+            await self.manager.start_all()
 
     async def on_message(self, message: discord.Message):
         if not self.is_owner_user(message.author.id):
             return
+        if message.author.bot and message.author.id != (self.user.id if self.user else 0):
+            return
+
+        if not self.is_host:
+            if not self.manager.channel_allowed(message.channel.id):
+                return
 
         prefix = self.command_prefix
         if isinstance(prefix, str) and message.content.startswith(prefix):
@@ -154,44 +165,27 @@ class NovaBot(commands.Bot):
 def register_core(bot: NovaBot):
     @bot.command(name="restart")
     async def restart_cmd(ctx: commands.Context):
-        await ctx.send(UI.status("Restarting bot system..."), delete_after=3)
+        if not bot.is_host:
+            return await ctx.send(UI.status("Restart is host-only."), delete_after=3)
+        await ctx.send(UI.status("Restarting all accounts..."), delete_after=3)
         os.execv(sys.executable, [sys.executable] + sys.argv)
-
-
-async def run_account(account_num: int, token: str, prefix: str, owner_id: str | None, license_key: str):
-    try:
-        bot = NovaBot(account_num, prefix, owner_id, license_key)
-    except LicenseError as exc:
-        print(f"{Fore.RED}[Account {account_num}] LICENSE ERROR: {exc}{Style.RESET_ALL}")
-        return
-
-    register_core(bot)
-    try:
-        await bot.start(token.strip())
-    except discord.LoginFailure:
-        print(f"{Fore.RED}[Account {account_num}] Invalid Discord token in config.json{Style.RESET_ALL}")
 
 
 async def main():
     cfg = load_config()
-    prefix = cfg.get("prefix", ".")
-    t1 = cfg.get("token_1", "").strip()
-    t2 = cfg.get("token_2", "").strip()
-    tasks = []
-
-    if t1 and t1 != "YOUR_ACCOUNT_1_TOKEN":
-        tasks.append(run_account(1, t1, prefix, cfg.get("user_id_1"), cfg.get("license_key_1", "")))
-    else:
-        print(f"{Fore.RED}[ERROR] Configure token_1 in config.json first.{Style.RESET_ALL}")
+    host_token = (cfg.get("host_token") or cfg.get("token_1") or "").strip()
+    if not host_token or host_token.startswith("YOUR_"):
+        print(f"{Fore.RED}[ERROR] Set host_token in config.json first.{Style.RESET_ALL}")
         return
 
-    if t2:
-        tasks.append(run_account(2, t2, prefix, cfg.get("user_id_2"), cfg.get("license_key_2", "")))
-        print(f"{Fore.YELLOW}[INFO] Dual Account Mode Active{Style.RESET_ALL}")
-    else:
-        print(f"{Fore.CYAN}[INFO] Single Account Mode Active{Style.RESET_ALL}")
+    host = NovaBot(cfg.get("host_prefix") or ".", cfg.get("owner_id"), is_host=True)
+    host.manager = TenantManager(host)
+    register_core(host)
 
-    await asyncio.gather(*tasks)
+    try:
+        await host.start(host_token)
+    except discord.LoginFailure:
+        print(f"{Fore.RED}[ERROR] Invalid host token in config.json{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":
