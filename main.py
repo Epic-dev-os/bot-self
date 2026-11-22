@@ -11,7 +11,7 @@ from colorama import Fore, Style, init
 from discord.ext import commands
 
 from manager import TenantManager
-from utils.storage import AccountStore, load_config
+from utils.storage import AccountStore, load_config, save_config
 from utils.theme import UI
 
 init(autoreset=True)
@@ -170,6 +170,39 @@ def register_core(bot: NovaBot):
         await ctx.send(UI.status("Restarting all accounts..."), delete_after=3)
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
+def apply_env_overrides() -> None:
+    """Push Railway env vars into config.json before any client boots."""
+    overrides: dict[str, object] = {}
+
+    token = os.getenv("HOST_TOKEN", "").strip()
+    if token:
+        overrides["host_token"] = token
+
+    owner = os.getenv("OWNER_ID", "").strip()
+    if owner.isdigit():
+        overrides["owner_id"] = owner
+
+    prefix = os.getenv("HOST_PREFIX", "").strip()
+    if prefix:
+        overrides["host_prefix"] = prefix
+
+    if os.getenv("ALLOW_ANYWHERE", "").lower() in ("1", "true", "yes", "on"):
+        overrides["allow_anywhere"] = True
+
+    if overrides:
+        cfg = load_config()
+        cfg.update(overrides)
+        save_config(cfg)
+
+
+async def main():
+    apply_env_overrides()
+    cfg = load_config()
+    host_token = (cfg.get("host_token") or "").strip()
+    if not host_token or host_token.startswith("YOUR_"):
+        print(f"{Fore.RED}[ERROR] HOST_TOKEN missing (env or config.json).{Style.RED if False else Style.RESET_ALL}")
+        return
+    ...
 
 async def main():
     cfg = load_config()
