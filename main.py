@@ -186,6 +186,10 @@ def apply_env_overrides() -> None:
     if prefix:
         overrides["host_prefix"] = prefix
 
+    panel = os.getenv("PANEL_CHANNEL", "").strip()
+    if panel.isdigit():
+        overrides["panel_channel"] = panel
+
     if os.getenv("ALLOW_ANYWHERE", "").lower() in ("1", "true", "yes", "on"):
         overrides["allow_anywhere"] = True
 
@@ -198,18 +202,15 @@ def apply_env_overrides() -> None:
 async def main():
     apply_env_overrides()
     cfg = load_config()
+
     host_token = (cfg.get("host_token") or "").strip()
     if not host_token or host_token.startswith("YOUR_"):
-        print(f"{Fore.RED}[ERROR] HOST_TOKEN missing (env or config.json).{Style.RED if False else Style.RESET_ALL}")
+        print(f"{Fore.RED}[ERROR] HOST_TOKEN is empty (env or config.json). "
+              f"Set it in Railway -> Variables and redeploy.{Style.RESET_ALL}")
         return
-    ...
 
-async def main():
-    cfg = load_config()
-    host_token = (cfg.get("host_token") or cfg.get("token_1") or "").strip()
-    if not host_token or host_token.startswith("YOUR_"):
-        print(f"{Fore.RED}[ERROR] Set host_token in config.json first.{Style.RESET_ALL}")
-        return
+    print(f"{Fore.CYAN}[HOST] Booting | token={len(host_token)} chars | "
+          f"data={os.getenv('DATA_DIR') or './data'}{Style.RESET_ALL}")
 
     host = NovaBot(cfg.get("host_prefix") or ".", cfg.get("owner_id"), is_host=True)
     host.manager = TenantManager(host)
@@ -218,7 +219,7 @@ async def main():
     try:
         await host.start(host_token)
     except discord.LoginFailure:
-        print(f"{Fore.RED}[ERROR] Invalid host token in config.json{Style.RESET_ALL}")
+        print(f"{Fore.RED}[ERROR] Discord rejected HOST_TOKEN — regenerate it.{Style.RESET_ALL}")
 
 
 if __name__ == "__main__":
