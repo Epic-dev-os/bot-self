@@ -13,7 +13,6 @@ from utils.theme import UI
 
 init(autoreset=True)
 
-
 class NovaBot(commands.Bot):
     def __init__(self, account_num: int, prefix: str, owner_id: str | None, license_key: str):
         super().__init__(command_prefix=prefix, self_bot=True, help_command=None)
@@ -149,13 +148,11 @@ class NovaBot(commands.Bot):
         except Exception:
             pass
 
-
 def register_core(bot: NovaBot):
     @bot.command(name="restart")
     async def restart_cmd(ctx: commands.Context):
         await ctx.send(UI.status("Restarting bot system..."), delete_after=3)
         os.execv(sys.executable, [sys.executable] + sys.argv)
-
 
 async def run_account(account_num: int, token: str, prefix: str, owner_id: str | None, license_key: str):
     try:
@@ -169,7 +166,6 @@ async def run_account(account_num: int, token: str, prefix: str, owner_id: str |
         await bot.start(token.strip())
     except discord.LoginFailure:
         print(f"{Fore.RED}[Account {account_num}] Invalid Discord token in config.json{Style.RESET_ALL}")
-
 
 async def main():
     cfg = load_config()
@@ -191,7 +187,6 @@ async def main():
         print(f"{Fore.CYAN}[INFO] Single Account Mode Active{Style.RESET_ALL}")
 
     await asyncio.gather(*tasks)
-
 
 if __name__ == "__main__":
     try:
