@@ -2,7 +2,7 @@
   "host_token": "YOUR_HOST_ACCOUNT_TOKEN",
   "owner_id": "YOUR_DISCORD_USER_ID",
   "host_prefix": ".",
-  "panel_channel": "",
+  "panel_channel": "1574085757600014546",
   "panel_message_id": "",
   "command_channels": [],
   "allow_anywhere": false,
