@@ -1,27 +1,23 @@
-
-import os
-import json
-
-config = {
-    "prefix": ".",
-    "token_1": os.getenv("DISCORD_TOKEN", ""),
-    "user_id_1": "YOUR_DISCORD_USER_ID",
-    "license_key_1": "PASTE_ACCOUNT_1_LICENSE_KEY",
-    "token_2": "",
-    "user_id_2": "",
-    "license_key_2": "",
-    "autodel": 0,
-    "deltrigger": None,
-    "server_link": "",
-    "upi_1": "",
-    "upi_2": "",
-    "qr_1": "",
-    "qr_2": "",
-    "ltc_addy_1": "",
-    "ltc_addy_2": "",
-    "binance_id": "",
-    "ltc_key": "",
-    "ai_api_key": os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY"),
-    "ai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-    "ai_model": "gemini-3.5-flash-lite"
+{
+  "prefix": ".",
+  "token_1": "MTU2ODMyMDg4MTUxNDY0MzYzNA.G0ni59.ug8Ta5v1G-kFhGLeYF9-48ozF_HDiQIipS2kfM",
+  "user_id_1": "YOUR_DISCORD_USER_ID",
+  "license_key_1": "PASTE_ACCOUNT_1_LICENSE_KEY",
+  "token_2": "",
+  "user_id_2": "",
+  "license_key_2": "",
+  "autodel": 0,
+  "deltrigger": null,
+  "server_link": "",
+  "upi_1": "",
+  "upi_2": "",
+  "qr_1": "",
+  "qr_2": "",
+  "ltc_addy_1": "",
+  "ltc_addy_2": "",
+  "binance_id": "",
+  "ltc_key": "",
+  "ai_api_key": "YOUR_GEMINI_API_KEY",
+  "ai_base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  "ai_model": "gemini-3.5-flash-lite"
 }
