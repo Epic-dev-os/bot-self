@@ -10,7 +10,6 @@ import discord
 from discord.ext import commands
 from utils.storage import load_config, AccountStore
 from utils.theme import UI
-from utils.licensing import verify_key, LicenseError
 
 init(autoreset=True)
 
