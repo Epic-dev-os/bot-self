@@ -1,9 +1,10 @@
 import json
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG_PATH = ROOT / "config.json"
-DATA_DIR = ROOT / "data"
+DATA_DIR = Path(os.getenv("DATA_DIR") or (ROOT / "data"))
 
 
 def load_config() -> dict:
@@ -24,17 +25,18 @@ def update_config(key: str, value) -> dict:
 
 
 class AccountStore:
-    """Per-instance data folder. Host -> data/, tenant -> data/u_<id>/."""
+    """Per-instance data folder. Host -> DATA_DIR, tenant -> DATA_DIR/u_<id>/."""
 
     def __init__(self, scope=1):
         if isinstance(scope, int):
-            folder = "data" if scope == 1 else "alt_data"
+            folder = DATA_DIR if scope == 1 else DATA_DIR / "alt_data"
         elif scope:
-            folder = f"data/u_{scope}"
+            folder = DATA_DIR / f"u_{scope}"
         else:
-            folder = "data"
-        self.dir = ROOT / folder
+            folder = DATA_DIR
+        self.dir = Path(folder)
         self.dir.mkdir(parents=True, exist_ok=True)
+    
 
     def load(self, name: str, default=None):
         path = self.dir / f"{name}.json"
