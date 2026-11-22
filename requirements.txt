@@ -3,3 +3,4 @@ aiohttp>=3.9.0
 colorama>=0.4.6
 qrcode>=7.4.2
 Pillow>=10.0.0
+cryptography>=42.0.0
