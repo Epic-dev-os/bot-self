@@ -59,12 +59,18 @@ class ConfigTheme(commands.Cog):
 
     @commands.command(name="setprefix")
     async def set_prefix(self, ctx, prefix: str):
-        self.bot.command_prefix = prefix
+        if self.bot.is_host:
+            update_config("host_prefix", prefix)
+        self.bot.set_prefix(prefix)
         await self._set(ctx, "prefix", prefix, "Prefix")
 
     @commands.command(name="autodel")
     async def set_autodel(self, ctx, seconds: int):
-        update_config("autodel", max(0, seconds))
+        seconds = max(0, seconds)
+        if self.bot.is_host:
+            update_config("autodel", seconds)
+        else:
+            self.bot.manager.update_autodel(self.bot.owner_id_override, seconds)
         state = f"`{seconds}s`" if seconds > 0 else "`OFF`"
         await ctx.send(UI.status(f"Auto-delete set to {state}"), delete_after=6)
 
