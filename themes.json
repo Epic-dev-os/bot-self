@@ -1,0 +1,56 @@
+{
+  "active_theme": "obsidian",
+  "brand_name": "Nova Selfbot",
+  "version": "v1.0",
+  "custom_emojis": {},
+  "presets": {
+    "obsidian": {
+      "style": "quote", "small_caps": true, "divider": "—",
+      "icons": {"brand": "◈", "arrow": "▸", "spark": "✦", "bolt": "⚡", "diamond": "❖", "star": "★", "check": "✔", "cross": "✖", "warn": "▲", "eye": "◉", "gear": "⚙", "coin": "◎"}
+    },
+    "cyberpunk": {
+      "style": "bracket", "small_caps": true, "divider": "»",
+      "icons": {"brand": "⟁", "arrow": "⚡", "spark": "✧", "bolt": "⚡", "diamond": "◈", "star": "✵", "check": "▣", "cross": "☒", "warn": "⚠", "eye": "◎", "gear": "⛭", "coin": "◈"}
+    },
+    "royal": {
+      "style": "quote", "small_caps": true, "divider": "•",
+      "icons": {"brand": "♛", "arrow": "⚜", "spark": "✧", "bolt": "❖", "diamond": "♦", "star": "★", "check": "✔", "cross": "✘", "warn": "◈", "eye": "❂", "gear": "⚙", "coin": "♛"}
+    },
+    "minimal": {
+      "style": "clean", "small_caps": false, "divider": ":",
+      "icons": {"brand": "•", "arrow": "›", "spark": "·", "bolt": "›", "diamond": "·", "star": "·", "check": "+", "cross": "-", "warn": "!", "eye": "o", "gear": "*", "coin": "$"}
+    },
+    "crimson": {
+      "style": "quote", "small_caps": true, "divider": "┃",
+      "icons": {"brand": "🩸", "arrow": "▸", "spark": "🔥", "bolt": "⚡", "diamond": "♦", "star": "✦", "check": "✔", "cross": "✖", "warn": "⚠", "eye": "👁", "gear": "⚙", "coin": "🪙"}
+    },
+    "emerald": {
+      "style": "quote", "small_caps": true, "divider": "—",
+      "icons": {"brand": "✳", "arrow": "▹", "spark": "☘", "bolt": "⚡", "diamond": "❖", "star": "★", "check": "✅", "cross": "❌", "warn": "▲", "eye": "◉", "gear": "⚙", "coin": "💵"}
+    },
+    "sakura": {
+      "style": "quote", "small_caps": true, "divider": "♡",
+      "icons": {"brand": "🌸", "arrow": "✿", "spark": "✨", "bolt": "🎀", "diamond": "💎", "star": "⭐", "check": "✔", "cross": "✖", "warn": "❗", "eye": "👀", "gear": "⚙", "coin": "🪙"}
+    },
+    "terminal": {
+      "style": "code", "small_caps": false, "divider": "=",
+      "icons": {"brand": "$", "arrow": ">", "spark": "#", "bolt": "!", "diamond": "*", "star": "+", "check": "[OK]", "cross": "[ERR]", "warn": "[WARN]", "eye": "[LOG]", "gear": "[CFG]", "coin": "[$]"}
+    },
+    "galaxy": {
+      "style": "quote", "small_caps": true, "divider": "⋆",
+      "icons": {"brand": "🪐", "arrow": "☄", "spark": "✨", "bolt": "⚡", "diamond": "🔮", "star": "🌟", "check": "✔", "cross": "✖", "warn": "⚠", "eye": "🔭", "gear": "⚙", "coin": "💫"}
+    },
+    "gold": {
+      "style": "quote", "small_caps": true, "divider": "│",
+      "icons": {"brand": "👑", "arrow": "▸", "spark": "✨", "bolt": "⚡", "diamond": "🔶", "star": "⭐", "check": "✔", "cross": "✖", "warn": "⚠", "eye": "👁", "gear": "⚙", "coin": "🪙"}
+    },
+    "ocean": {
+      "style": "quote", "small_caps": true, "divider": "~",
+      "icons": {"brand": "🌊", "arrow": "▸", "spark": "❄", "bolt": "⚡", "diamond": "💠", "star": "✦", "check": "✔", "cross": "✖", "warn": "▲", "eye": "◉", "gear": "⚙", "coin": "💎"}
+    },
+    "monochrome": {
+      "style": "bracket", "small_caps": true, "divider": "|",
+      "icons": {"brand": "◼", "arrow": "▪", "spark": "▫", "bolt": "▸", "diamond": "◆", "star": "★", "check": "✔", "cross": "✖", "warn": "▲", "eye": "●", "gear": "⚙", "coin": "○"}
+    }
+  }
+}
